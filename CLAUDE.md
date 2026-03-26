@@ -1,4 +1,4 @@
-# Prints by Angel — Retail Partner Ordering Page
+# CardStockApp — Partners Page
 
 ## Owner
 Angel Verde — "Prints by Angel" letterpress card business
@@ -6,14 +6,14 @@ Angel Verde — "Prints by Angel" letterpress card business
 ## Tech Stack
 - Vanilla HTML/CSS/JS (single file: `index.html`)
 - Google Apps Script backend (shared with admin app)
-- GitHub Pages hosting (planned move to Netlify)
+- Vercel hosting (auto-deploys from GitHub `advl-glitch/cardstock-app-partners`)
 
-## Key File
-- `index.html` — entire retail frontend
-- `Retail Partner Page - Letterpress App.code.gs` — GAS backend reference
+## Key Files
+- `index.html` — entire partners frontend
+- `cardstock-app-partners.gs` — GAS backend reference
 
 ## Related Repo
-- Admin app: `letterpress-inventory-app-Sandbox`
+- Admin app: `advl-glitch/cardstock-app-admin`
 
 ## Architecture
 - Partner verification flow (enter details → verify → browse stock)
