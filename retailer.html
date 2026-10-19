@@ -774,6 +774,15 @@
 
     .modal-close:hover { background: var(--coral-light); color: var(--coral); }
 
+    .how-section { margin-bottom: 1.25rem; }
+    .how-section-icon { font-size: 1.3rem; margin-bottom: 0.2rem; }
+    .how-section-title { font-family: var(--font-display); font-size: 1rem; color: var(--brown); margin-bottom: 0.5rem; }
+    .how-rule-list { list-style: none; padding: 0; margin: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+    .how-rule-list li { display: flex; gap: 0.6rem; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; line-height: 1.45; color: var(--brown-mid); background: var(--white); }
+    .how-rule-list li:last-child { border-bottom: none; }
+    .how-rule-icon { flex-shrink: 0; font-size: 0.95rem; margin-top: 0.05rem; }
+    .how-rule-list li strong { color: var(--brown); }
+
     .modal-title {
       font-family: var(--font-display);
       font-size: 1.375rem;
@@ -1148,7 +1157,7 @@
   <!-- Instructions Banner -->
   <div class="instructions-banner">
     <span>👋 Browse designs below. <strong>Select a quantity and add cards to your request,</strong> then complete the form at the bottom to submit.</span>
-    <a class="instructions-how-link" href="/how-ordering-works.html" target="_blank">📋 How Ordering Works</a>
+    <button class="instructions-how-link" onclick="openHowOrderingWorks()">📋 How Ordering Works</button>
   </div>
 
   <!-- Main -->
@@ -1178,6 +1187,56 @@
     <div class="modal" id="modal">
       <button class="modal-close" id="modal-close">✕</button>
       <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- How Ordering Works modal -->
+  <div class="modal-overlay" id="how-modal-overlay" onclick="closeHowOrderingWorks(event)">
+    <div class="modal" style="max-width:680px;" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeHowOrderingWorks()">✕</button>
+      <div style="font-family:var(--font-display);font-size:1.4rem;color:var(--brown);margin-bottom:0.25rem;padding-right:2rem;">How Ordering Works</div>
+      <div style="font-size:0.85rem;color:var(--brown-light);margin-bottom:1.5rem;">Rules vary by partner type — find your section below.</div>
+
+      <div class="how-section">
+        <div class="how-section-icon">📦</div>
+        <div class="how-section-title">Wholesale Partners</div>
+        <ul class="how-rule-list">
+          <li><span class="how-rule-icon">6️⃣</span><span><strong>Order in multiples of 6.</strong> Each design must be ordered in packs of 6 (6, 12, 18…).</span></li>
+          <li><span class="how-rule-icon">💵</span><span><strong>$150 minimum on your first order.</strong> Your first request must total at least $150 pre-tax.</span></li>
+          <li><span class="how-rule-icon">🧾</span><span><strong>Billed after fulfillment.</strong> Final invoice reflects actual quantities shipped. Virginia sales tax (5.3%) applies.</span></li>
+          <li><span class="how-rule-icon">✅</span><span><strong>You own the inventory.</strong> Cards are yours to sell at your own retail price.</span></li>
+        </ul>
+      </div>
+
+      <div class="how-section">
+        <div class="how-section-icon">🤝</div>
+        <div class="how-section-title">Consignment Partners</div>
+        <ul class="how-rule-list">
+          <li><span class="how-rule-icon">4️⃣</span><span><strong>Minimum 4 cards per design.</strong> Each design in your restock request must have a quantity of at least 4.</span></li>
+          <li><span class="how-rule-icon">💰</span><span><strong>No upfront payment.</strong> Angel stocks your location and you pay a percentage of sales.</span></li>
+          <li><span class="how-rule-icon">📍</span><span><strong>Virginia only.</strong> Consignment partnerships are currently available in select areas of Virginia.</span></li>
+        </ul>
+      </div>
+
+      <div class="how-section">
+        <div class="how-section-icon">⏱</div>
+        <div class="how-section-title">Made to Order</div>
+        <ul class="how-rule-list">
+          <li><span class="how-rule-icon">🖨</span><span><strong>Out-of-stock Wholesale Line designs</strong> can still be ordered — Angel will produce them for your request.</span></li>
+          <li><span class="how-rule-icon">📅</span><span><strong>Allow approximately 3 weeks for production.</strong> Angel will confirm a ready date when approving.</span></li>
+          <li><span class="how-rule-icon">🔄</span><span><strong>Subject to approval.</strong> Angel may approve, decline, or adjust based on production schedule.</span></li>
+        </ul>
+      </div>
+
+      <div class="how-section">
+        <div class="how-section-icon">🃏</div>
+        <div class="how-section-title">Card Lines</div>
+        <ul class="how-rule-list">
+          <li><span class="how-rule-icon">✦</span><span><strong>Wholesale Line.</strong> Core catalog — orderable as Made to Order when out of stock.</span></li>
+          <li><span class="how-rule-icon">⭐</span><span><strong>Limited Edition.</strong> Small runs. Not available as Made to Order — once gone, it's gone.</span></li>
+          <li><span class="how-rule-icon">🔞</span><span><strong>Explicit / 18+.</strong> Adult humor designs, hidden behind an age confirmation button.</span></li>
+        </ul>
+      </div>
     </div>
   </div>
 
@@ -2407,6 +2466,17 @@
       toast.textContent = message;
       toast.className = `toast show ${type}`;
       setTimeout(() => { toast.className = 'toast'; }, 3000);
+    }
+
+    function openHowOrderingWorks() {
+      document.getElementById('how-modal-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeHowOrderingWorks(e) {
+      if (e && e.target !== document.getElementById('how-modal-overlay')) return;
+      document.getElementById('how-modal-overlay').classList.remove('open');
+      document.body.style.overflow = '';
     }
   </script>
 
