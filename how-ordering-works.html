@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How Ordering Works — Prints by Angel Retailers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #F5F0E4;
+      --cream-dark: #EDE7D6;
+      --white: #FFFFFF;
+      --teal: #4AABAB;
+      --teal-dark: #378A8A;
+      --teal-light: #E8F5F5;
+      --amber: #E8933A;
+      --amber-light: #FDF3E7;
+      --brown: #3D2B1F;
+      --brown-mid: #6B4C3B;
+      --brown-light: #A07860;
+      --coral: #E05C45;
+      --coral-light: #FEF0EE;
+      --green: #5A9E6F;
+      --green-light: #EBF5EF;
+      --border: #E2D9C8;
+      --shadow-sm: 0 1px 3px rgba(61,43,31,0.08);
+      --shadow-md: 0 4px 16px rgba(61,43,31,0.12);
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --font-display: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-body); background: var(--cream); color: var(--brown); min-height: 100vh; }
+
+    .retailer-header {
+      background: #2C1F17;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.25rem;
+      text-align: center;
+    }
+    .retailer-header-logo {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      color: #F0E6D3;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .retailer-header-logo span { color: var(--teal); }
+    .retailer-header-sub { font-size: 0.8rem; color: #C4A882; text-transform: uppercase; letter-spacing: 0.12em; }
+
+    .page-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--brown);
+      margin-bottom: 0.4rem;
+    }
+    .page-intro {
+      font-size: 0.95rem;
+      color: var(--brown-light);
+      margin-bottom: 2.5rem;
+      line-height: 1.6;
+    }
+
+    .section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.75rem 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-icon {
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      color: var(--brown);
+      margin-bottom: 0.6rem;
+    }
+
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+    .badge-teal { background: var(--teal-light); color: var(--teal-dark); }
+    .badge-amber { background: var(--amber-light); color: var(--amber); }
+    .badge-coral { background: var(--coral-light); color: var(--coral); }
+
+    .rule-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .rule-list li {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--brown-mid);
+    }
+    .rule-list li:last-child { border-bottom: none; }
+    .rule-list li .rule-icon { flex-shrink: 0; font-size: 1rem; margin-top: 0.1rem; }
+    .rule-list li strong { color: var(--brown); }
+
+    .highlight-box {
+      border-radius: var(--radius-sm);
+      padding: 0.875rem 1rem;
+      font-size: 0.875rem;
+      line-height: 1.55;
+      margin-top: 1rem;
+    }
+    .highlight-teal { background: var(--teal-light); color: var(--teal-dark); border-left: 3px solid var(--teal); }
+    .highlight-amber { background: var(--amber-light); color: var(--amber); border-left: 3px solid var(--amber); }
+    .highlight-green { background: var(--green-light); color: var(--green); border-left: 3px solid var(--green); }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--teal);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      margin-bottom: 2rem;
+    }
+    .back-link:hover { color: var(--teal-dark); text-decoration: underline; }
+
+    .retailer-footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.75rem;
+      color: var(--brown-light);
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      .page-wrap { padding: 1.5rem 1rem 3rem; }
+      .section { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="retailer-header">
+    <div class="retailer-header-logo">
+      <span>✦</span> Prints by Angel
+    </div>
+    <div class="retailer-header-sub">Retailer Resources</div>
+  </header>
+
+  <main class="page-wrap">
+
+    <a class="back-link" href="/">← Back to Stock List</a>
+
+    <h1 class="page-title">How Ordering Works</h1>
+    <p class="page-intro">
+      Everything you need to know about placing requests through the Prints by Angel retailer portal.
+      Rules vary by partner type — find your section below.
+    </p>
+
+    <!-- WHOLESALE -->
+    <div class="section">
+      <div class="section-icon">📦</div>
+      <div class="section-title">Wholesale Partners <span class="section-badge badge-teal">Wholesale</span></div>
+      <ul class="rule-list">
+        <li>
+          <span class="rule-icon">6️⃣</span>
+          <span><strong>Order in multiples of 6.</strong> Each in-stock design must be ordered in packs of 6 (6, 12, 18…). The order form will flag any quantities that don't meet this requirement.</span>
+        </li>
+        <li>
+          <span class="rule-icon">💵</span>
+          <span><strong>$150 minimum on your first order.</strong> If you haven't placed a fulfilled wholesale order before, your first request must total at least $150 (pre-tax). This ensures the first print run is worthwhile for both parties.</span>
+        </li>
+        <li>
+          <span class="rule-icon">🧾</span>
+          <span><strong>You're billed after fulfillment.</strong> An estimated total is shown at checkout, but your final invoice reflects actual quantities shipped. Virginia sales tax (5.3%) applies.</span>
+        </li>
+        <li>
+          <span class="rule-icon">✅</span>
+          <span><strong>You own the inventory.</strong> Once shipped, cards are yours to sell at your own retail price. No revenue splits.</span>
+        </li>
+      </ul>
+      <div class="highlight-box highlight-teal">
+        <strong>Wholesale pricing</strong> is shown in your cart and review screen once you've selected your store account.
+      </div>
+    </div>
+
+    <!-- CONSIGNMENT -->
+    <div class="section">
+      <div class="section-icon">🤝</div>
+      <div class="section-title">Consignment Partners <span class="section-badge badge-amber">Consignment</span></div>
+      <ul class="rule-list">
+        <li>
+          <span class="rule-icon">4️⃣</span>
+          <span><strong>Minimum 4 cards per design.</strong> Each design in your restock request must have a quantity of at least 4. This keeps display quantities practical and tracking manageable.</span>
+        </li>
+        <li>
+          <span class="rule-icon">💰</span>
+          <span><strong>No upfront payment.</strong> You don't pay for the cards — Angel stocks your location and you pay a percentage of sales. Your restock request triggers Angel to review and send more cards.</span>
+        </li>
+        <li>
+          <span class="rule-icon">📍</span>
+          <span><strong>Virginia only.</strong> Consignment partnerships are currently available in select areas of Virginia. If you're outside those areas, please inquire about wholesale.</span>
+        </li>
+        <li>
+          <span class="rule-icon">📬</span>
+          <span><strong>Angel reviews every request.</strong> Once submitted, your restock request goes to Angel for approval and fulfillment. You'll receive a confirmation email.</span>
+        </li>
+      </ul>
+      <div class="highlight-box highlight-green">
+        <strong>No pricing is shown</strong> for consignment partners — revenue sharing is handled separately per your individual agreement.
+      </div>
+    </div>
+
+    <!-- MADE TO ORDER -->
+    <div class="section">
+      <div class="section-icon">⏱</div>
+      <div class="section-title">Made to Order <span class="section-badge badge-amber">Print Request</span></div>
+      <ul class="rule-list">
+        <li>
+          <span class="rule-icon">🖨</span>
+          <span><strong>Out-of-stock designs available to wholesale partners.</strong> Designs in the Made to Order section are currently out of stock but can be ordered — Angel will produce them for your request.</span>
+        </li>
+        <li>
+          <span class="rule-icon">📅</span>
+          <span><strong>Allow approximately 3 weeks for production.</strong> Print requests require time for production and quality checks. Angel will confirm a ready date when approving your request.</span>
+        </li>
+        <li>
+          <span class="rule-icon">🔄</span>
+          <span><strong>Subject to approval.</strong> Angel reviews each print request individually and may approve, decline, or adjust quantities based on production schedule and demand.</span>
+        </li>
+        <li>
+          <span class="rule-icon">📦</span>
+          <span><strong>Same wholesale rules apply.</strong> MTO quantities must be in multiples of 6, and the $150 first-order minimum still applies if this is your first wholesale order.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- GENERAL PROCESS -->
+    <div class="section">
+      <div class="section-icon">🔄</div>
+      <div class="section-title">The Order Process</div>
+      <ul class="rule-list">
+        <li>
+          <span class="rule-icon">1️⃣</span>
+          <span><strong>Browse and add to your request.</strong> Select quantities for each design you want, then click Add. Your cart builds up in the Your Request section at the bottom.</span>
+        </li>
+        <li>
+          <span class="rule-icon">2️⃣</span>
+          <span><strong>Enter your store and submitter info.</strong> Search for your store name and fill in your name and email so Angel knows who sent the request.</span>
+        </li>
+        <li>
+          <span class="rule-icon">3️⃣</span>
+          <span><strong>Review, then verify your identity.</strong> You'll be asked to enter the personal email or cell number of the owner or manager who set up your account. This protects against unauthorized orders.</span>
+        </li>
+        <li>
+          <span class="rule-icon">4️⃣</span>
+          <span><strong>Confirmation email.</strong> Once submitted, you'll receive a confirmation. Angel reviews the request and will reach out with any questions or a ready date.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- CARD LINES -->
+    <div class="section">
+      <div class="section-icon">🃏</div>
+      <div class="section-title">Card Lines</div>
+      <ul class="rule-list">
+        <li>
+          <span class="rule-icon">✦</span>
+          <span><strong>Standard.</strong> The core Prints by Angel catalog — available to all wholesale partners, orderable as Made to Order when out of stock.</span>
+        </li>
+        <li>
+          <span class="rule-icon">⭐</span>
+          <span><strong>Limited Edition.</strong> Special runs produced in small quantities. <em>Not available as Made to Order</em> — once stock is gone, it's gone. Hidden by default; use the "Show Limited Edition" button to view them.</span>
+        </li>
+        <li>
+          <span class="rule-icon">🔞</span>
+          <span><strong>Naughty Cards.</strong> Adult humor cards (18+). Hidden behind an age confirmation. <em>Not available as Made to Order.</em> Please ensure your store is an appropriate environment for this content.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- QUESTIONS -->
+    <div class="highlight-box highlight-teal" style="margin-top:0.5rem;">
+      <strong>Questions?</strong> Reach out to Angel directly at your usual contact info. If you need to set up a new account or have trouble logging in, use the "Not listed? Request a partner account" option on the stock page.
+    </div>
+
+  </main>
+
+  <footer class="retailer-footer">
+    ✦ Prints by Angel · Handmade Letterpress Cards · All rights reserved
+  </footer>
+
+</body>
+</html>

@@ -44,6 +44,7 @@ function doGet(e) {
       case 'getPublicStock':   result = getPublicStock();                              break;
       case 'getTags':          result = getTags();                                     break;
       case 'searchRetailers':  result = searchRetailers(e.parameter.query);            break;
+      case 'getSettings':      result = getSettings();                                 break;
       default:
         result = { success: false, error: 'Unknown action: ' + action };
     }
@@ -134,9 +135,11 @@ function getPendingStockMap() {
     const itemsIdx  = headers.indexOf('ItemsJSON');
     const map = {};
     data.forEach(row => {
-      if (row[statusIdx] === 'Pending' || row[statusIdx] === 'In Progress') {
+      const status = String(row[statusIdx] || '');
+      if (status.startsWith('Pending') || status === 'In Progress') {
         try {
           JSON.parse(row[itemsIdx] || '[]').forEach(item => {
+            if (item.isRequest) return; // Don't count request lines — not yet printed
             const id = String(item.itemId);
             map[id] = (map[id] || 0) + parseInt(item.qty || 0);
           });
@@ -166,27 +169,47 @@ function getPublicStock() {
     const tagMap     = getItemTagsMap();
     const pendingMap = getPendingStockMap();
 
+    // Build tag lookup for category-aware filtering
+    const tagsResult = getTags();
+    const tagLookup  = {};
+    if (tagsResult.success) {
+      tagsResult.tags.forEach(t => { tagLookup[t.TagID] = t; });
+    }
+
     const stockItems = itemsResult.items
-      .filter(item => item.Active !== false && item.Active !== 'FALSE' && item.Status !== 'Retired')
+      .filter(item => {
+        if (item.Status === 'Retired') return false;
+        // Must be flagged as a wholesale design
+        const isWholesaleDesign = item.Wholesale === true || String(item.Wholesale).toUpperCase() === 'TRUE';
+        return isWholesaleDesign;
+      })
       .map(item => {
         const pending   = pendingMap[String(item.ItemID)] || 0;
-        const available = Math.max(0, (parseInt(item.StartingAtHome) || 0) - pending);
+        const atHome    = parseInt(item.StartingAtHome) || 0;
+        const available = Math.max(0, atHome - pending);
+        const inStock   = available > 0;
+
+        const tagIds  = tagMap[String(item.ItemID)] || [];
+        const seasons = tagIds.filter(id => tagLookup[id]?.Category === 'Season').map(id => tagLookup[id].TagName);
+        const regions = tagIds.filter(id => tagLookup[id]?.Category === 'Region').map(id => tagLookup[id].TagName);
+
         return {
           itemId:         item.ItemID,
           displayName:    item.DisplayName || item.Name,
           photo:          item.Photo || '',
           productType:    item.ProductType || '',
           unitPrice:      item.UnitPrice || 0,
-          totalStock:     parseInt(item.StartingAtHome) || 0,
+          totalStock:     atHome,
           pending,
           available,
-          tags:           tagMap[String(item.ItemID)] || [],
+          inStock,
+          tags:           tagIds,
+          seasons,
+          regions,
+          line:           item.Line || 'Standard',
           wholesalePrice: getWholesalePrice(item.ProductType),
-          createdAt:      item.CreatedAt || '',
-          status:         item.Status || 'Open',
         };
-      })
-      ;
+      });
 
     return { success: true, items: stockItems };
   } catch (e) {
@@ -309,18 +332,46 @@ function submitOrder(orderData) {
       ]);
     }
 
-    const now        = new Date();
-    const orderId    = 'ORD-' + now.getTime();
+    const now         = new Date();
+    const orderId     = 'ORD-' + now.getTime();
     const isWholesale = orderData.partnerType === 'wholesale';
+
+    // --- Order validation ---
+    if (isWholesale) {
+      const badQty = orderData.items.filter(item => !item.isRequest && item.qty % 6 !== 0);
+      if (badQty.length > 0) {
+        return { success: false, error: 'Wholesale orders must be in packs of 6. Check quantities for: ' + badQty.map(i => i.designName).join(', ') };
+      }
+      if (isFirstWholesaleOrder(orderData.locationId)) {
+        const previewTotal = orderData.items
+          .filter(item => !item.isRequest)
+          .reduce((sum, item) => sum + (item.wholesalePrice || 2) * item.qty, 0);
+        if (previewTotal < 150) {
+          return { success: false, error: 'First wholesale orders have a $150 minimum. Current total: $' + previewTotal.toFixed(2) };
+        }
+      }
+    } else {
+      const badConsign = orderData.items.filter(item => item.qty < 4);
+      if (badConsign.length > 0) {
+        return { success: false, error: 'Consignment orders require a minimum of 4 cards per design. Check: ' + badConsign.map(i => i.designName).join(', ') };
+      }
+    }
 
     let subTotal = 0;
     if (isWholesale) {
-      orderData.items.forEach(item => {
+      orderData.items.filter(item => !item.isRequest).forEach(item => {
         subTotal += (item.wholesalePrice || 2) * item.qty;
       });
     }
-    const taxAmount = isWholesale ? subTotal * VA_SALES_TAX : 0;
-    const estTotal  = subTotal + taxAmount;
+    const taxAmount   = isWholesale ? subTotal * VA_SALES_TAX : 0;
+    const estTotal    = subTotal + taxAmount;
+    const hasRequests = orderData.items.some(item => item.isRequest);
+
+    // Ensure ReadyDate column exists
+    const existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    if (!existingHeaders.includes('ReadyDate')) {
+      sheet.getRange(1, existingHeaders.length + 1).setValue('ReadyDate');
+    }
 
     sheet.appendRow([
       orderId,
@@ -334,9 +385,10 @@ function submitOrder(orderData) {
       isWholesale ? subTotal.toFixed(2) : '',
       isWholesale ? taxAmount.toFixed(2) : '',
       isWholesale ? estTotal.toFixed(2) : '',
-      'Pending',
+      hasRequests ? 'Pending — Has Requests' : 'Pending',
       orderData.notes || '',
-      ''
+      '',
+      '',  // ReadyDate
     ]);
 
     sendOrderNotification(orderId, orderData, subTotal, taxAmount, estTotal);
@@ -501,4 +553,50 @@ function sendRetailerConfirmation(orderId, orderData, subTotal, taxAmount, estTo
       `
     });
   } catch (e) {}
+}
+
+
+// =============================================================================
+// SETTINGS — read Active Season and other app-level settings
+// =============================================================================
+
+function getSettings() {
+  try {
+    let sheet = SPREADSHEET.getSheetByName('Settings');
+    if (!sheet) return { success: true, settings: {} };
+    const data     = sheet.getDataRange().getValues();
+    const settings = {};
+    data.forEach(row => {
+      if (row[0]) settings[String(row[0])] = row[1];
+    });
+    return { success: true, settings };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+function isFirstWholesaleOrder(locationId) {
+  try {
+    const sheet = SPREADSHEET.getSheetByName('Orders');
+    if (!sheet) return true;
+    const data    = sheet.getDataRange().getValues();
+    const headers = data[0];
+    const locIdx    = headers.indexOf('LocationID');
+    const typeIdx   = headers.indexOf('PartnerType');
+    const statusIdx = headers.indexOf('Status');
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][locIdx]).toLowerCase()  === String(locationId).toLowerCase() &&
+          String(data[i][typeIdx]).toLowerCase()  === 'wholesale' &&
+          String(data[i][statusIdx]) === 'Fulfilled') {
+        return false;
+      }
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
