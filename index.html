@@ -1529,10 +1529,6 @@
 
       const mtoItems = filteredItems.filter(i => i.inStock === false);
 
-      // Determine if LE / Explicit cards exist at all in the full stock list
-      const hasLE       = allItems.some(i => i.line === 'Limited Edition');
-      const hasExplicit = allItems.some(i => i.explicit);
-
       let html = '';
 
       // ── Seasonal Spotlight ──
@@ -1544,21 +1540,15 @@
           </div>`;
       }
 
-      // ── Line visibility buttons ──
-      if (hasLE || hasExplicit) {
-        html += `<div class="line-vis-bar">`;
-        if (hasLE) {
-          html += `<button class="line-vis-btn le-btn ${limitedEditionVisible ? 'le-active' : ''}" onclick="toggleLimitedEdition()">
-            ${limitedEditionVisible ? '▾ Hide' : '▸ Show'} Limited Edition
-          </button>`;
-        }
-        if (hasExplicit) {
-          html += `<button class="line-vis-btn explicit-btn ${explicitUnlocked ? 'explicit-active' : ''}" onclick="toggleExplicit()">
-            🔞 ${explicitUnlocked ? 'Hide' : 'Show'} Explicit 18+ Card Designs
-          </button>`;
-        }
-        html += `</div>`;
-      }
+      // ── Line visibility buttons (always shown) ──
+      html += `<div class="line-vis-bar">
+        <button class="line-vis-btn le-btn ${limitedEditionVisible ? 'le-active' : ''}" onclick="toggleLimitedEdition()">
+          ${limitedEditionVisible ? '▾ Hide' : '▸ Show'} Limited Edition
+        </button>
+        <button class="line-vis-btn explicit-btn ${explicitUnlocked ? 'explicit-active' : ''}" onclick="toggleExplicit()">
+          🔞 ${explicitUnlocked ? 'Hide' : 'Show'} Explicit 18+ Card Designs
+        </button>
+      </div>`;
 
       // ── In Stock section ──
       {
