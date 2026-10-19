@@ -177,17 +177,18 @@ function getPublicStock() {
     }
 
     const stockItems = itemsResult.items
-      .filter(item => {
-        if (item.Status === 'Retired') return false;
-        // Must be flagged as a wholesale design
-        const isWholesaleDesign = item.Wholesale === true || String(item.Wholesale).toUpperCase() === 'TRUE';
-        return isWholesaleDesign;
-      })
+      .filter(item => item.Status !== 'Retired')
       .map(item => {
         const pending   = pendingMap[String(item.ItemID)] || 0;
         const atHome    = parseInt(item.StartingAtHome) || 0;
         const available = Math.max(0, atHome - pending);
         const inStock   = available > 0;
+
+        const line     = item.Line || 'Wholesale Line';
+        const explicit = item.Explicit === true || String(item.Explicit).toUpperCase() === 'TRUE';
+
+        // Limited Edition out-of-stock designs are hidden entirely (not MTO)
+        if (line === 'Limited Edition' && !inStock) return null;
 
         const tagIds  = tagMap[String(item.ItemID)] || [];
         const seasons = tagIds.filter(id => tagLookup[id]?.Category === 'Season').map(id => tagLookup[id].TagName);
@@ -206,10 +207,12 @@ function getPublicStock() {
           tags:           tagIds,
           seasons,
           regions,
-          line:           item.Line || 'Standard',
+          line,
+          explicit,
           wholesalePrice: getWholesalePrice(item.ProductType),
         };
-      });
+      })
+      .filter(Boolean);
 
     return { success: true, items: stockItems };
   } catch (e) {
