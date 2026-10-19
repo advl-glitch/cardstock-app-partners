@@ -1439,14 +1439,14 @@
       const spotlightIds = new Set(spotlightItems.map(i => i.itemId));
 
       const inStockItems = filteredItems.filter(i => {
-        if (!i.inStock) return false;
+        if (i.inStock === false) return false; // explicit false = MTO; undefined = assume in-stock
         if (spotlightIds.has(i.itemId)) return false; // shown in spotlight already
         if (i.line === 'Limited Edition') return limitedEditionVisible;
         if (i.line === 'Naughty Cards') return naughtyUnlocked;
         return true; // Standard
       });
 
-      const mtoItems = filteredItems.filter(i => !i.inStock);
+      const mtoItems = filteredItems.filter(i => i.inStock === false);
 
       // Determine if LE / Naughty cards exist at all in the full stock list
       const hasLE = allItems.some(i => i.line === 'Limited Edition');
@@ -1516,7 +1516,7 @@
     function renderItemCard(item) {
       const cartItem = cart[item.itemId];
       const currentQty = cartItem ? cartItem.qty : 0;
-      const isMTO = !item.inStock;
+      const isMTO = item.inStock === false;
       const allPending = !isMTO && item.available === 0 && item.pending > 0;
 
       const cornerBadge = item.line === 'Limited Edition'
@@ -1561,7 +1561,7 @@
     function renderItemListRow(item) {
       const cartItem = cart[item.itemId];
       const currentQty = cartItem ? cartItem.qty : 0;
-      const isMTO = !item.inStock;
+      const isMTO = item.inStock === false;
       const allPending = !isMTO && item.available === 0 && item.pending > 0;
 
       const lineBadge = item.line === 'Limited Edition'
