@@ -1522,7 +1522,7 @@
       const inStockItems = filteredItems.filter(i => {
         if (i.inStock === false) return false; // explicit false = MTO; undefined = assume in-stock
         if (spotlightIds.has(i.itemId)) return false; // shown in spotlight already
-        if (i.explicit && !explicitUnlocked) return false; // age-gated
+        if (i.explicit) return explicitUnlocked; // explicit cards only show when age gate is unlocked
         if (i.line === 'Limited Edition') return limitedEditionVisible;
         return true;
       });
